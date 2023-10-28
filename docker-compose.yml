@@ -8,7 +8,7 @@ services:
       context: .
       dockerfile: Dockerfile-be
     environment:
-      DATABASE_URL: "host=go_db user=admin password=1234 dbname=postgres sslmode=disable"
+      DATABASE_URL: "host=go_db user=root password=1234 dbname=postgres sslmode=disable"
     ports:
       - "8000:8000"
     depends_on:
@@ -20,13 +20,15 @@ services:
     container_name: go_db
     image: postgres:12
     environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: root
       POSTGRES_DB: postgres
     ports:
       - "5432:5432"
+    restart: always
     volumes:
-      - pgdata:/var/lib/postgresql/data
+        - pgdata:/var/lib/postgresql/data
+        - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
   app:
     build:
       context: ./
@@ -39,5 +41,8 @@ services:
       - ./mb-fe/.env.local 
     ports:
       - "3000:3000"
+    # volumes:
+    #   - ./mb-fe:/usr/src/app
+ 
 volumes:  
-  pgdata: {}
+  pgdata: {}      

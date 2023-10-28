@@ -1,22 +1,17 @@
-# Use an official Golang runtime as a base image
+# use official Golang image
 FROM golang:1.16.3-alpine3.13
- 
-# Set the working directory inside the container
-WORKDIR app/
 
-# Copy the local package files to the container's workspace
-COPY ./mb-be .
- 
+# set working directory
+WORKDIR /app
+
+# Copy the source code
+COPY . . 
 
 # Download and install the dependencies
 RUN go get -d -v ./...
- 
+
 # Build the Go app
 RUN go build -o api .
- 
-
-COPY ./mb-be /app
- 
 
 #EXPOSE the port
 EXPOSE 8000

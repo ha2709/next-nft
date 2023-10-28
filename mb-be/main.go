@@ -11,7 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // PostgreSQL driver
 	"github.com/rs/cors"
 )
 
@@ -33,17 +33,18 @@ func main() {
 	}
 
 	// Retrieve database connection parameters from environment variables
-	dbUser := os.Getenv("DATABASE_USER")
-	dbPassword := os.Getenv("DATABASE_PASSWORD")
-	dbName := os.Getenv("DATABASE_NAME")
-	dbHost := os.Getenv("DATABASE_HOST")
-	dbPort := os.Getenv("DATABASE_PORT")
+	// dbUser := os.Getenv("DATABASE_USER")
+	// dbPassword := os.Getenv("DATABASE_PASSWORD")
+	// dbName := os.Getenv("DATABASE_NAME")
+	// dbHost := os.Getenv("DATABASE_HOST")
+	// dbPort := os.Getenv("DATABASE_PORT")
 
-	// Construct the database connection string
-	dbConnectionString := "user=" + dbUser + " password=" + dbPassword + " dbname=" + dbName + " host=" + dbHost + " port=" + dbPort
+	// // Construct the database connection string
+	// dbConnectionString := "user=" + dbUser + " password=" + dbPassword + " dbname=" + dbName + " host=" + dbHost + " port=" + dbPort
 
 	// Connect to the database
-	db, err := sql.Open("postgres", dbConnectionString)
+	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	// db, err := sql.Open("postgres", dbConnectionString)
 
 	if err != nil {
 		log.Fatal(err)

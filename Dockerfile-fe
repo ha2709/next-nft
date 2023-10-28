@@ -2,7 +2,7 @@
 FROM node:18
 
 # Set the working directory
-WORKDIR /usr/src/app
+WORKDIR app/
 
 # Copy package.json and package-lock.json to the working directory
 COPY mb-fe/package*.json ./
@@ -11,13 +11,14 @@ COPY mb-fe/package*.json ./
 RUN npm install
 
 # Copy the entire project to the working directory
-COPY mb-fe .
+COPY ./mb-fe /app
 
 # Build the React app
 RUN npm run build
-
-# Serve the React app with a static server
-CMD ["npx", "serve", "-s", "build", "-l", "3000"]
-
 # Expose the port the app runs on
 EXPOSE 3000
+
+# Serve the React app with a static server
+CMD ["npm", "start"]
+
+
