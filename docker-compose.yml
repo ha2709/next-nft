@@ -36,7 +36,7 @@ services:
       - go_db
       - go-app
     env_file:
-      - ./mb-fe/.env 
+      - ./mb-fe/.env.local 
     ports:
       - "3000:3000"
 volumes:  

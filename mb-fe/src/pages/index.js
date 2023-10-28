@@ -3,15 +3,16 @@ import { ethers } from 'ethers'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
 import { useRouter } from 'next/router'
 import axios from 'axios';
-// import Web3Modal from 'web3modal'
+import MBNFT from '../utils/contracts/MBNFT.json'
+// console.log(7, MBNFT)
 require('dotenv').config();
 // I spent a lot of time,due to chane the name of two variable 
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 const projectSecret = process.env.NEXT_PUBLIC_SECRET_KEY;
 // console.log(11, projectId, projectSecret)
-const UPLOAD_URL = process.env.REACT_APP_URL_IPFS;
-// console.log(12, UPLOAD_URL)
-const API_URL = process.env.API_URL || 'http://localhost:8000/api/v1';
+const UPLOAD_URL = process.env.NEXT_PUBLIC_UPLOAD_METADATA;
+console.log(12, UPLOAD_URL)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
 axios.defaults.baseURL = API_URL;
  
@@ -27,12 +28,6 @@ const client = ipfsHttpClient({
   },
 })
  
-// import {
-//   marketplaceAddress
-// } from '../config'
-
-// import NFTMarketplace from '../artifacts/contracts/NFTMarketplace.sol/NFTMarketplace.json'
-
 export default function Home() {
   // const [fileUrl, setFileUrl] = useState(null)
   const [fileUrl, setFileUrl] = useState(null);
@@ -54,9 +49,10 @@ export default function Home() {
           const signer = provider.getSigner();
           let network = await provider.getNetwork();
           let chainId = network.chainId;
-          console.log(chainId)
+          // console.log(chainId)
+          // console.log(53, MBNFT.networks)
           let tokenAddress = MBNFT.networks[chainId].address;
-
+          
           const contract = new ethers.Contract(tokenAddress, MBNFT.abi, signer);
           setTokenContract(contract);
           getImageUrl(contract, signer)
@@ -69,7 +65,33 @@ export default function Home() {
       }
     })();
   }, []);
+  async function getImageUrl(contract, signer) {
+    let tokenId = await contract._tokenIds();
+    const currentAccount = await signer.getAddress();
 
+    setAccount(currentAccount);
+    tokenId = parseInt(tokenId.toString());
+
+    let metadataUrl;
+    for (let i = 1; i <= tokenId; i++) {
+      let owner = await contract.ownerOf(i);
+      if (owner.toLowerCase() === currentAccount.toLowerCase()) {
+        metadataUrl = await contract.tokenURI(i);
+        break;
+      }
+    }
+
+    if (metadataUrl != null) {
+      try {
+        
+        let metadata = await axios.get(metadataUrl, "");
+        console.log(metadata)
+        setMetaDataUrl(metadata.data.image);
+      } catch (error) {
+        console.error("No NFT", error);
+      }
+    }
+  }
   async function uploadToIPFS(e) {
     const file = e.target.files[0]
     try {
@@ -126,12 +148,14 @@ export default function Home() {
         description,
         image: fileUrl,
       });
-
+     
       const jsonObject = JSON.parse(data);
+      console.log(155, jsonObject, typeof jsonObject)
       const added = await client.add(JSON.stringify(jsonObject));
-      const urlMetadata = UPLOAD_URL + added.path;
-
-      await handleMintNFT(urlMetadata);
+    
+      const url = UPLOAD_URL + added.path;
+      console.log(159, url)
+      await handleMintNFT(url);
     } catch (error) {
       console.error(error);
     }
@@ -141,27 +165,16 @@ export default function Home() {
     try {
       let transaction = await tokenContract.mintNFT(account, url, hash.hash);
       let confirmation = await transaction.wait();
+      let event = confirmation.events[0]
+      let value = event.args[2]
+      let tokenId = value.toNumber()
+      console.log(tokenId)
+      alert("Please reload the page to view the image from NFT ")
     } catch (error) {
       console.log(error);
     }
   };
-  // async function listNFTForSale() {
-  //   const url = await uploadToIPFS()
-  //   const web3Modal = new Web3Modal()
-  //   const connection = await web3Modal.connect()
-  //   const provider = new ethers.providers.Web3Provider(connection)
-  //   const signer = provider.getSigner()
-
-  //   /* next, create the item */
-  //   const price = ethers.utils.parseUnits(formInput.price, 'ether')
-  //   let contract = new ethers.Contract(marketplaceAddress, NFTMarketplace.abi, signer)
-  //   let listingPrice = await contract.getListingPrice()
-  //   listingPrice = listingPrice.toString()
-  //   let transaction = await contract.createToken(url, price, { value: listingPrice })
-  //   await transaction.wait()
-   
-  //   router.push('/')
-  // }
+ 
 
   return (
     <div className="flex justify-center">
@@ -188,16 +201,17 @@ export default function Home() {
           className="my-4"
           onChange={uploadToIPFS}
         />
-        {
-          fileUrl && (
-            <img className="rounded mt-4" width="350" src={fileUrl} />
-          )
-        }
+   
         <button 
-        // onClick={createUrl} 
+        onClick={createUrl} 
         className="font-bold mt-4 bg-pink-500 text-white rounded p-4 shadow-lg">
           Create NFT
         </button>
+        {
+          metadataUrl && (
+            <img className="rounded mt-4" width="350" src={metadataUrl} />
+          )
+        }
       </div>
     </div>
   )

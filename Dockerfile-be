@@ -11,7 +11,7 @@ COPY ./mb-be .
 RUN go get -d -v ./...
 
 # Build the Go app
-RUN go build -o api/api .
+RUN go mod tidy
 
 #EXPOSE the port
 EXPOSE 8000
