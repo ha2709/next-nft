@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ethers } from 'ethers'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
 import { useRouter } from 'next/router'
@@ -54,6 +54,7 @@ export default function Home() {
           const signer = provider.getSigner();
           let network = await provider.getNetwork();
           let chainId = network.chainId;
+          console.log(chainId)
           let tokenAddress = MBNFT.networks[chainId].address;
 
           const contract = new ethers.Contract(tokenAddress, MBNFT.abi, signer);
@@ -116,7 +117,7 @@ export default function Home() {
       console.error('Error to create Hash:', error);
     }
   };
-  
+
   const createUrl = async (e) => {
     e.preventDefault();
     try {
