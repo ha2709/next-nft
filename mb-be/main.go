@@ -84,7 +84,7 @@ func main() {
 func validateAPIKey(r *http.Request) bool {
 	apiKey := r.Header.Get("access_token")
 	expectedKey := os.Getenv("API_KEY")
-
+	// fmt.Println(apiKey, expectedKey)
 	return expectedKey == apiKey
 }
 
