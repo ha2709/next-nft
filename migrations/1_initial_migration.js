@@ -3,7 +3,7 @@ const MBNFT = artifacts.require("MBNFT");
 
 module.exports = async function (deployer) {
   const startDate = Math.round(Date.now() / 1000);
-  const endDate = startDate + 86400;
+  const endDate = startDate + 8640000000;
   console.log(7, startDate, endDate)
   await deployer.deploy(MBNFT,startDate, endDate);
   const MBNFTContract = await MBNFT.deployed()

@@ -17,4 +17,14 @@ cd mb-fe
 npm start
 ```
 
+To run Blockchain local:
+
+`npm i ganache-cli`
+
+Then to start Ganche :
+
+`ganache-cli`
+
+To interact with Contract on FrontEnd, copy Private Keys Front Ganache-cli and import it to MetaMask. 
+
 `git rm -r --cached node_modules`
