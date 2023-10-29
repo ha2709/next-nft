@@ -9,17 +9,14 @@ import (
 	"net/http"
 	"os"
 
+	"api/pkg/models"
+	"api/pkg/utils"
+
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq" // PostgreSQL driver
 	"github.com/rs/cors"
 )
-
-type User struct {
-	ID            int    `json:"id"`
-	NRIC          string `json:"NRIC"`
-	WalletAddress string `json:"wallet_address"`
-}
 
 type Receipt struct {
 	Hash string `json:"hash"`
@@ -32,15 +29,16 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	// Retrieve database connection parameters from environment variables
-	dbUser := os.Getenv("DATABASE_USER")
-	dbPassword := os.Getenv("DATABASE_PASSWORD")
-	dbName := os.Getenv("DATABASE_NAME")
-	dbHost := os.Getenv("DATABASE_HOST")
-	dbPort := os.Getenv("DATABASE_PORT")
+	// // Retrieve database connection parameters from environment variables
+	// dbUser := os.Getenv("DATABASE_USER")
+	// dbPassword := os.Getenv("DATABASE_PASSWORD")
+	// dbName := os.Getenv("DATABASE_NAME")
+	// dbHost := os.Getenv("DATABASE_HOST")
+	// dbPort := os.Getenv("DATABASE_PORT")
 
-	// Construct the database connection string
-	dbConnectionString := "user=" + dbUser + " password=" + dbPassword + " dbname=" + dbName + " host=" + dbHost + " port=" + dbPort
+	// // Construct the database connection string
+	// dbConnectionString := "user=" + dbUser + " password=" + dbPassword + " dbname=" + dbName + " host=" + dbHost + " port=" + dbPort
+	dbConnectionString := utils.GetDBConnectionString()
 	db, err := sql.Open("postgres", dbConnectionString)
 	// Connect to the database
 	// db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
@@ -51,7 +49,7 @@ func main() {
 	defer db.Close()
 
 	// Create the "users" table if it doesn't exist
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, NRIC TEXT UNIQUE, wallet_address TEXT UNIQUE)")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, NRIC TEXT, wallet_address TEXT)")
 
 	if err != nil {
 		log.Fatal(err)
@@ -62,11 +60,13 @@ func main() {
 
 	// Add the API version to the route paths
 	apiV1 := router.PathPrefix("/api/v1").Subrouter()
+
 	apiV1.HandleFunc("/users", getUsers(db)).Methods("GET")
 	apiV1.HandleFunc("/users", createUser(db)).Methods("POST")
+
 	// Set up CORS middleware
 	corsMiddleware := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"}, // Change this to your actual frontend origin in production
+		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization", "Access-Control-Allow-Origin", "access_token"},
 		ExposedHeaders:   []string{"Content-Type", "Authorization"},
@@ -74,7 +74,7 @@ func main() {
 	})
 
 	// Apply the CORS middleware to the router
-	handler := corsMiddleware.Handler(jsonContentTypeMiddleware(router))
+	handler := corsMiddleware.Handler(utils.JSONContentTypeMiddleware(router))
 
 	// Start the HTTP server
 	log.Fatal(http.ListenAndServe(":8000", handler))
@@ -105,9 +105,9 @@ func getUsers(db *sql.DB) http.HandlerFunc {
 		}
 		defer rows.Close()
 
-		users := []User{}
+		users := []models.User{}
 		for rows.Next() {
-			var u User
+			var u models.User
 			if err := rows.Scan(&u.ID, &u.NRIC, &u.WalletAddress); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -144,7 +144,7 @@ func createUser(db *sql.DB) http.HandlerFunc {
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // Replace with your actual frontend origin
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-		var u User
+		var u models.User
 		err := json.NewDecoder(r.Body).Decode(&u)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -180,7 +180,7 @@ func createUser(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func hashUserData(user User) string {
+func hashUserData(user models.User) string {
 	// Create a new SHA-256 hash
 	hasher := sha256.New()
 
