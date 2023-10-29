@@ -11,16 +11,15 @@ require('dotenv').config();
 // I spent a lot of time,due to chane the name of two variable 
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 const projectSecret = process.env.NEXT_PUBLIC_SECRET_KEY;
-// console.log(11, projectId, projectSecret)
+ 
 const UPLOAD_URL = process.env.NEXT_PUBLIC_UPLOAD_METADATA;
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
 // console.log(16, apiKey)
 axios.defaults.baseURL = API_URL;
  
 const auth = 'Basic ' + Buffer.from(projectId + ':' + projectSecret).toString('base64');
-// console.log(20, auth)
-// const auth = "Basic " + btoa(projectId + ":" + projectSecret);
+ 
 const client = ipfsHttpClient({
   host: 'ipfs.infura.io',
   port: 5001,
@@ -31,7 +30,7 @@ const client = ipfsHttpClient({
 })
  
 export default function Home() {
-  // const [fileUrl, setFileUrl] = useState(null)
+  
   const [fileUrl, setFileUrl] = useState(null);
   const [metadataUrl, setMetaDataUrl] = useState("");
   const [description, setDescription] = useState(null);
@@ -40,6 +39,7 @@ export default function Home() {
   const [account, setAccount] = useState(null);
   const [nric, setNric] = useState('');
   const [tokenContract, setTokenContract] = useState(null);
+  const [userBalance , setUserBalance] = useState(0)
 
   useEffect(() => {
     (async () => {
@@ -49,13 +49,27 @@ export default function Home() {
 
           const provider = new ethers.providers.Web3Provider(window.ethereum);
           const signer = provider.getSigner();
+          const currentAccount = await signer.getAddress();
+
+          setAccount(currentAccount);
           let network = await provider.getNetwork();
           let chainId = network.chainId;
-          // console.log(chainId)
-          // console.log(53, MBNFT.networks)
+          console.log(55, chainId)
+          let balance = await provider.getBalance(currentAccount);
+          balance =  ethers.utils.formatEther(balance);
+          balance = parseFloat(balance);
+          setUserBalance(balance)
+          console.log(chainId, balance)
+      
           let tokenAddress = MBNFT.networks[chainId].address;
-          
-          const contract = new ethers.Contract(tokenAddress, MBNFT.abi, signer);
+          let contract
+          try {
+            contract = new ethers.Contract(tokenAddress, MBNFT.abi, signer);
+          } catch (error) {
+            console.error('Error on contract deployment', error);
+          }
+          console.log(63, contract)
+
           setTokenContract(contract);
           getImageUrl(contract, signer)
     
@@ -69,31 +83,39 @@ export default function Home() {
   }, []);
 
   async function getImageUrl(contract, signer) {
-    let tokenId = await contract._tokenIds();
-    const currentAccount = await signer.getAddress();
-
-    setAccount(currentAccount);
-    tokenId = parseInt(tokenId.toString());
-
-    let metadataUrl;
-    for (let i = 1; i <= tokenId; i++) {
-      let owner = await contract.ownerOf(i);
-      if (owner.toLowerCase() === currentAccount.toLowerCase()) {
-        metadataUrl = await contract.tokenURI(i);
-        break;
+    try {
+      let tokenId = await contract._tokenIds();
+      tokenId = tokenId.toString() 
+      // console.log(89, tokenId.toString())
+      if (tokenId == "0")   return
+      console.log("Token ID:", tokenId); 
+      tokenId = parseInt(tokenId);
+      let metadataUrl;
+      for (let i = 1; i <= tokenId; i++) {
+        let owner = await contract.ownerOf(i);
+        // console.log(96, owner, account)
+        if (owner.toLowerCase() === account.toLowerCase()) {
+          metadataUrl = await contract.tokenURI(i);
+          break;
+        }
       }
-    }
 
-    if (metadataUrl != null) {
-      try {
-        
-        let metadata = await axios.get(metadataUrl, "");
-        console.log(metadata)
-        setMetaDataUrl(metadata.data.image);
-      } catch (error) {
-        console.error("No NFT", error);
+      if (metadataUrl != null) {
+        try {
+          
+          let metadata = await axios.get(metadataUrl, "");
+          console.log(metadata)
+          setMetaDataUrl(metadata.data.image);
+        } catch (error) {
+          console.error("No NFT", error);
+        }
       }
+    } catch (error) {
+      console.error("Error: No NFT Found", error);
+      return null;
+      
     }
+ 
   }
 
   async function uploadToIPFS(e) {
@@ -133,7 +155,7 @@ export default function Home() {
   };
 
   const postData = async () => {
-    console.log(133, apiKey)
+    // console.log(133, apiKey)
     // const apiKey = process.env.API_KEY; // Replace with your API key
     const postData = {
       NRIC: nric,
@@ -142,7 +164,7 @@ export default function Home() {
     const config = {
       headers: {
         'Content-Type': 'application/json', // Set the content type
-        'Authorization': `Bearer ${apiKey}` // Set the authorization header
+        'access_token': API_KEY // Set the authorization header
       }
     };
     console.log(141, config)
@@ -179,6 +201,20 @@ export default function Home() {
 
   const handleMintNFT = async (url) => {
     try {
+      //  Estimate gas for the transaction
+      const estimatedGas = await tokenContract.estimateGas.mintNFT(account, url, hash.hash);
+      // Check if the user has enough balance for the transaction
+      const gasPrice = await tokenContract.provider.getGasPrice();
+      let gasCost = estimatedGas.mul(gasPrice);
+      gasCost = ethers.utils.formatEther(gasCost);
+      console.log(gasCost, typeof gasCost, userBalance)
+      if ( userBalance < gasCost ) {
+        let message = "Insufficient balance to cover gas cost"
+        alert(message)
+        throw new Error(message);
+        
+      }
+      console.log(216, account, url, hash.hash)
       let transaction = await tokenContract.mintNFT(account, url, hash.hash);
       let confirmation = await transaction.wait();
       let event = confirmation.events[0]
@@ -187,7 +223,10 @@ export default function Home() {
       console.log(tokenId)
       alert("Please reload the page to view the image from NFT ")
     } catch (error) {
-      console.log(error);
+      let message = "Fail to mint NFT, please check limit of NFT  "
+      console.log(message,error);
+      alert(message);
+      
     }
   };
  

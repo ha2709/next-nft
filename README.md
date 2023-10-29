@@ -29,9 +29,17 @@ To run Blockchain local:
 
 Then to start Ganche :
 
-`ganache-cli`
+`ganache-cli i 1337`
 
 To interact with Contract on FrontEnd, copy Private Keys Front Ganache-cli and import it to MetaMask. 
+
+Then deploy contract to local: 
+
+`truffle migrate --reset --compile-all --network development`
+
+Then go to browser at : 
+
+`http://localhost:3000/`
 
 To run application, in the project folder, run 
 
