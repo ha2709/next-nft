@@ -33,18 +33,17 @@ func main() {
 	}
 
 	// Retrieve database connection parameters from environment variables
-	// dbUser := os.Getenv("DATABASE_USER")
-	// dbPassword := os.Getenv("DATABASE_PASSWORD")
-	// dbName := os.Getenv("DATABASE_NAME")
-	// dbHost := os.Getenv("DATABASE_HOST")
-	// dbPort := os.Getenv("DATABASE_PORT")
+	dbUser := os.Getenv("DATABASE_USER")
+	dbPassword := os.Getenv("DATABASE_PASSWORD")
+	dbName := os.Getenv("DATABASE_NAME")
+	dbHost := os.Getenv("DATABASE_HOST")
+	dbPort := os.Getenv("DATABASE_PORT")
 
-	// // Construct the database connection string
-	// dbConnectionString := "user=" + dbUser + " password=" + dbPassword + " dbname=" + dbName + " host=" + dbHost + " port=" + dbPort
-
+	// Construct the database connection string
+	dbConnectionString := "user=" + dbUser + " password=" + dbPassword + " dbname=" + dbName + " host=" + dbHost + " port=" + dbPort
+	db, err := sql.Open("postgres", dbConnectionString)
 	// Connect to the database
-	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
-	// db, err := sql.Open("postgres", dbConnectionString)
+	// db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 
 	if err != nil {
 		log.Fatal(err)
@@ -67,9 +66,9 @@ func main() {
 	apiV1.HandleFunc("/users", createUser(db)).Methods("POST")
 	// Set up CORS middleware
 	corsMiddleware := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"}, // Change this to your actual frontend origin in production
+		AllowedOrigins: []string{"http://localhost:3000"}, // Change this to your actual frontend origin in production
 		AllowedMethods: []string{"GET", "POST"},
-		AllowedHeaders: []string{"Content-Type"},
+		AllowedHeaders: []string{"Content-Type", "Authorization"},
 	})
 
 	// Apply the CORS middleware to the router
@@ -77,6 +76,12 @@ func main() {
 
 	// Start the HTTP server
 	log.Fatal(http.ListenAndServe(":8000", handler))
+}
+
+// validate the API key from the request header
+func validateAPIKey(r *http.Request, apiKey string) bool {
+	apiKeyFromHeader := r.Header.Get("Authorization")
+	return apiKeyFromHeader == apiKey
 }
 
 func jsonContentTypeMiddleware(next http.Handler) http.Handler {
@@ -116,6 +121,16 @@ func getUsers(db *sql.DB) http.HandlerFunc {
 
 func createUser(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Retrieve the API key from the environment variables
+		apiKey := os.Getenv("API_KEY")
+		if !validateAPIKey(r, apiKey) {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		// Set the necessary headers for CORS
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // Replace with your actual frontend origin
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
 		var u User
 		err := json.NewDecoder(r.Body).Decode(&u)
 		if err != nil {

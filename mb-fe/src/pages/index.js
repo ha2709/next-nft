@@ -1,19 +1,21 @@
+import React from 'react';
+
 import { useEffect, useState } from 'react'
 import { ethers } from 'ethers'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
-import { useRouter } from 'next/router'
+// import { useRouter } from 'next/router'
 import axios from 'axios';
 import MBNFT from '../utils/contracts/MBNFT.json'
-// console.log(7, MBNFT)
+ 
 require('dotenv').config();
 // I spent a lot of time,due to chane the name of two variable 
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 const projectSecret = process.env.NEXT_PUBLIC_SECRET_KEY;
 // console.log(11, projectId, projectSecret)
 const UPLOAD_URL = process.env.NEXT_PUBLIC_UPLOAD_METADATA;
-console.log(12, UPLOAD_URL)
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-
+const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+// console.log(16, apiKey)
 axios.defaults.baseURL = API_URL;
  
 const auth = 'Basic ' + Buffer.from(projectId + ':' + projectSecret).toString('base64');
@@ -65,6 +67,7 @@ export default function Home() {
       }
     })();
   }, []);
+
   async function getImageUrl(contract, signer) {
     let tokenId = await contract._tokenIds();
     const currentAccount = await signer.getAddress();
@@ -92,6 +95,7 @@ export default function Home() {
       }
     }
   }
+
   async function uploadToIPFS(e) {
     const file = e.target.files[0]
     try {
@@ -109,6 +113,7 @@ export default function Home() {
       console.log('Error uploading file: ', error)
     }  
   }
+
   const handleNricChange = (e) => {
     setNric(e.target.value);
   };
@@ -126,12 +131,23 @@ export default function Home() {
       postData();
     }
   };
+
   const postData = async () => {
+    console.log(133, apiKey)
+    // const apiKey = process.env.API_KEY; // Replace with your API key
+    const postData = {
+      NRIC: nric,
+      wallet_address: account,
+    };
+    const config = {
+      headers: {
+        'Content-Type': 'application/json', // Set the content type
+        'Authorization': `Bearer ${apiKey}` // Set the authorization header
+      }
+    };
+    console.log(141, config)
     try {
-      const response = await axios.post('/users', {
-        NRIC: nric,
-        wallet_address: account,
-      });
+      const response = await axios.post('/users', postData, config);
       let data = response.data
       setHash(data);
       console.log(127, data)
