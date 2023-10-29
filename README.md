@@ -39,19 +39,11 @@ To interact with the local blockchain, install Ganache CLI using:
 
 Start Ganache using:
 
-`ganache-cli i 1337`
+`ganache-cli`
 
 To interact with Contract on FrontEnd, copy Private Keys Front Ganache-cli and import it to MetaMask. 
 
-## Local Deployment
-
-After deploying the contract locally, navigate to:
-
-`http://localhost:3000/`
-
-## Docker Deployment
-
-To run the application using Docker, execute the following command in the project folder:
+To run application, in the project folder, run 
 
 `docker-compose up --build`
 
