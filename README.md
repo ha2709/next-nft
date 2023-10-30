@@ -68,3 +68,5 @@ To run tests, execute the following command in the project folder:
 
 ## Troubleshooting
 If encountering issues with IPFS, ensure the stable version is 50.1.2. For Metamask issues, make sure to use the stable version "ipfs-http-client": "^56.0.1". Also, ensure you are using Ganache CLI instead of the GUI version when developing with React.
+
+I utilized two different machines during the development of this codebase, which is why you'll notice two distinct users associated with this repository.
