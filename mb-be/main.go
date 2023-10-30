@@ -32,7 +32,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	// // Retrieve database connection parameters from environment variables
+	// Retrieve database connection parameters from environment variables
 	// dbUser := os.Getenv("DATABASE_USER")
 	// dbPassword := os.Getenv("DATABASE_PASSWORD")
 	// dbName := os.Getenv("DATABASE_NAME")
@@ -66,9 +66,11 @@ func main() {
 	apiV1.HandleFunc("/users", createUser(db)).Methods("POST")
 	// Set up CORS middleware
 	corsMiddleware := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:3000"}, // Change this to your actual frontend origin in production
-		AllowedMethods: []string{"GET", "POST"},
-		AllowedHeaders: []string{"Content-Type", "Authorization"},
+		AllowedOrigins:   []string{"http://localhost:3000"}, // Change this to your actual frontend origin in production
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization", "Access-Control-Allow-Origin", "access_token"},
+		ExposedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
 	})
 
 	// Apply the CORS middleware to the router
@@ -79,9 +81,11 @@ func main() {
 }
 
 // validate the API key from the request header
-func validateAPIKey(r *http.Request, apiKey string) bool {
-	apiKeyFromHeader := r.Header.Get("Authorization")
-	return apiKeyFromHeader == apiKey
+func validateAPIKey(r *http.Request) bool {
+	apiKey := r.Header.Get("access_token")
+	expectedKey := os.Getenv("API_KEY")
+	// fmt.Println(apiKey, expectedKey)
+	return expectedKey == apiKey
 }
 
 func jsonContentTypeMiddleware(next http.Handler) http.Handler {
@@ -119,11 +123,20 @@ func getUsers(db *sql.DB) http.HandlerFunc {
 	}
 }
 
+func enableCORS(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Access-Control-Allow-Origin")
+	w.Header().Set("Access-Control-Expose-Headers", "Content-Type, Authorization")
+
+}
+
 func createUser(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Retrieve the API key from the environment variables
-		apiKey := os.Getenv("API_KEY")
-		if !validateAPIKey(r, apiKey) {
+
+		// Enable CORS
+		enableCORS(w)
+		if !validateAPIKey(r) {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}

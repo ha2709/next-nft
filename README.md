@@ -35,11 +35,11 @@ npm start
 
 To interact with the local blockchain, install Ganache CLI using:
 
-`npm i ganache-cli`
+`sudo npm i -g ganache-cli`
 
 Start Ganache using:
 
-`ganache-cli`
+`ganache-cli -i 1337`
 
 To interact with Contract on FrontEnd, copy Private Keys Front Ganache-cli and import it to MetaMask. 
 
