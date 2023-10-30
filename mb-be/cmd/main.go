@@ -32,9 +32,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// Create the "users" table if it doesn't exist
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, NRIC TEXT, wallet_address TEXT)")
-
 	if err != nil {
 		log.Fatal(err)
 	}
