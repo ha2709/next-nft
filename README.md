@@ -1,3 +1,12 @@
+# Next NFT Project
+
+## Clone the Code
+
+To clone the code, please use the following command:
+ 
+
+`git clone --branch docker https://github.com/ha2709/next-nft.git`
+
 # Project Deployment
 
 To deploy the project, follow the steps outlined below:
