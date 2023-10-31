@@ -78,7 +78,6 @@ func createUser(db *sql.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
 		// Check if the NRIC already exists in the database to enforce uniqueness.
 		var existingID int
 		err = db.QueryRow("SELECT id FROM users WHERE NRIC = $1", u.NRIC).Scan(&existingID)

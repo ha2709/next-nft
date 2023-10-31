@@ -19,15 +19,23 @@ migrate
 
 ### Goerli Contract Address : `0xB71d0D6676ECFe62A3779C362612aB926cD383A7`
 
+## Docker Set up
+
+`docker-compose up --build`
+
+## to Run container: 
+
+`docker-compose up`
+
 ## Back End Setup
 
 `npm install --force`
 
-To run the back end locally, ensure that Postgresql is running, and verify the credentials in the .env file. Open db/database.go, uncomment lines 30, and comment out line 28. Then execute the following commands:
+To run the back end locally, ensure that Postgresql is running, and verify the credentials in the .env file. Open db/database.go, uncomment lines 29, and comment out line 32. Then execute the following commands:
 
 ```
 cd mb-be
-sudo systemctl status postgresql.service
+sudo systemctl start postgresql.service
 go run cmd/main.go
 ```
 ## Front End Setup

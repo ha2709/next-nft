@@ -1,9 +1,8 @@
 package main
 
 import (
-	"api/pkg/utils"
+	"api/db"
 	"api/router"
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,20 +21,15 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-
-	dbConnectionString := utils.GetDBConnectionString()
-	db, err := sql.Open("postgres", dbConnectionString)
-	// Connect to the database
-	// db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
-
+	db, err := db.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	// fmt.Printf("dbConnectionString %s...\n", dbConnectionString)
+	// Connect to the database
+	// db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 
 	r := router.SetupRoutes(db)
 	port := "8000"

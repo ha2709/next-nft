@@ -26,16 +26,16 @@ func Connect() (*sql.DB, error) {
 	// Construct the database connection string
 	dbConnectionString := "user=" + dbUser + " password=" + dbPassword + " dbname=" + dbName + " host=" + dbHost + " port=" + dbPort
 
-	db, err := sql.Open("postgres", dbConnectionString)
+	// db, err := sql.Open("postgres", dbConnectionString)
 	fmt.Printf("dbConnectionString %s...\n", dbConnectionString)
 	// Connect to the database
-	// db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	err = db.Ping()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer db.Close()
+	// defer db.Close()
 
 	// Create the "users" table if it doesn't exist
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, NRIC TEXT UNIQUE, wallet_address TEXT UNIQUE)")

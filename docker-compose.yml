@@ -8,12 +8,12 @@ services:
       context: .
       dockerfile: Dockerfile-be
     environment:
-        POSTGRES_PASSWORD: 1234
-        POSTGRES_USER: root
-        POSTGRES_DDATABASE: postgres
-        POSTGRES_HOST: go_db
-        POSTGRES_PORT: 5432
-      # DATABASE_URL: "host=go_db user=root password=1234 dbname=postgres sslmode=disable"
+        # POSTGRES_PASSWORD: 1234
+        # POSTGRES_USER: root
+        # POSTGRES_DDATABASE: postgres
+        # POSTGRES_HOST: go_db
+        # POSTGRES_PORT: 5432
+      DATABASE_URL: "host=go_db user=root password=1234 dbname=postgres sslmode=disable"
     ports:
       - "8000:8000"
     depends_on:
