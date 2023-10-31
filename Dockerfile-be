@@ -5,19 +5,17 @@ FROM golang:1.16.3-alpine3.13
 WORKDIR app/
 
 # Copy the local package files to the container's workspace
-COPY ./mb-be .
+COPY ./mb-be/go.mod .
+COPY ./mb-be/go.sum .
  
-
+COPY ./mb-be/ .
 # Download and install the dependencies
-RUN go get -d -v ./...
+RUN go mod download
  
 # Build the Go app
-RUN go build -o api .
+RUN go build -o api ./cmd/main.go 
  
-
-COPY ./mb-be /app
  
-
 #EXPOSE the port
 EXPOSE 8000
  

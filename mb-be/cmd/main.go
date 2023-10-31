@@ -4,6 +4,7 @@ import (
 	"api/pkg/utils"
 	"api/router"
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -37,7 +38,8 @@ func main() {
 	}
 
 	r := router.SetupRoutes(db)
-
+	port := "8000"
+	fmt.Printf("Server is running on port %s...\n", port)
 	// Start the HTTP server
-	log.Fatal(http.ListenAndServe(":8000", r))
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }

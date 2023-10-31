@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
@@ -26,6 +27,7 @@ func Connect() (*sql.DB, error) {
 	dbConnectionString := "user=" + dbUser + " password=" + dbPassword + " dbname=" + dbName + " host=" + dbHost + " port=" + dbPort
 
 	db, err := sql.Open("postgres", dbConnectionString)
+	fmt.Printf("dbConnectionString %s...\n", dbConnectionString)
 	// Connect to the database
 	// db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	err = db.Ping()

@@ -19,7 +19,8 @@ const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
 axios.defaults.baseURL = API_URL;
  
 const auth = 'Basic ' + Buffer.from(projectId + ':' + projectSecret).toString('base64');
-const IPFS_URL= process.env.NEXT_PUBLIC_IPFS_URL
+const IPFS_URL= process.env.NEXT_PUBLIC_IPFS_URL;
+console.log(23,IPFS_URL )
 const client = ipfsHttpClient({
   host: IPFS_URL,
   port: 5001,
@@ -27,7 +28,7 @@ const client = ipfsHttpClient({
   headers: {
       authorization: auth,
   },
-})
+});
  
 export default function Home() {
   
@@ -36,7 +37,7 @@ export default function Home() {
   const [description, setDescription] = useState(null);
   const [name, setName] = useState(null);
   const [hash, setHash] = useState(null);
-  const [account, setAccount] = useState(null);
+  const [addressMetaMask, setAddressMetaMask] = useState(null);
   const [nric, setNric] = useState('');
   const [tokenContract, setTokenContract] = useState(null);
   const [userBalance , setUserBalance] = useState(0)
@@ -51,15 +52,15 @@ export default function Home() {
           const signer = provider.getSigner();
           const currentAccount = await signer.getAddress();
 
-          setAccount(currentAccount);
+          setAddressMetaMask(currentAccount);
           let network = await provider.getNetwork();
           let chainId = network.chainId;
-          console.log(55, chainId)
+          
           let balance = await provider.getBalance(currentAccount);
           balance =  ethers.utils.formatEther(balance);
           balance = parseFloat(balance);
           setUserBalance(balance)
-          console.log(chainId, balance)
+          console.log(61, chainId, addressMetaMask, balance)
       
           let tokenAddress = MBNFT.networks[chainId].address;
           let contract
@@ -71,8 +72,39 @@ export default function Home() {
           console.log(63, contract)
 
           setTokenContract(contract);
-          getImageUrl(contract, signer)
-    
+        
+          try {
+            let tokenId = await contract._tokenIds();
+            tokenId = tokenId.toString() 
+          
+            if (tokenId == "0")   return
+            console.log("Token ID:", tokenId); 
+            tokenId = parseInt(tokenId);
+            let metadataUrl;
+            for (let i = 1; i <= tokenId; i++) {
+              let owner = await contract.ownerOf(i);
+              console.log(96, owner, currentAccount)
+              if (owner.toLowerCase() === currentAccount.toLowerCase()) {
+                metadataUrl = await contract.tokenURI(i);
+                break;
+              }
+            }
+      
+            if (metadataUrl != null) {
+              try {
+                
+                let metadata = await axios.get(metadataUrl, "");
+                console.log(107, metadata)
+                setMetaDataUrl(metadata.data.image);
+              } catch (error) {
+                console.error("No NFT", error);
+              }
+            }
+          } catch (error) {
+            console.error("Error: No NFT Found", error);
+            return null;
+            
+          }
         } catch (error) {
           console.log('Error', error);
         }
@@ -83,38 +115,7 @@ export default function Home() {
   }, []);
 
   async function getImageUrl(contract, signer) {
-    try {
-      let tokenId = await contract._tokenIds();
-      tokenId = tokenId.toString() 
-      // console.log(89, tokenId.toString())
-      if (tokenId == "0")   return
-      console.log("Token ID:", tokenId); 
-      tokenId = parseInt(tokenId);
-      let metadataUrl;
-      for (let i = 1; i <= tokenId; i++) {
-        let owner = await contract.ownerOf(i);
-        // console.log(96, owner, account)
-        if (owner.toLowerCase() === account.toLowerCase()) {
-          metadataUrl = await contract.tokenURI(i);
-          break;
-        }
-      }
-
-      if (metadataUrl != null) {
-        try {
-          
-          let metadata = await axios.get(metadataUrl, "");
-          console.log(metadata)
-          setMetaDataUrl(metadata.data.image);
-        } catch (error) {
-          console.error("No NFT", error);
-        }
-      }
-    } catch (error) {
-      console.error("Error: No NFT Found", error);
-      return null;
-      
-    }
+   
  
   }
 
@@ -159,7 +160,7 @@ export default function Home() {
     // const apiKey = process.env.API_KEY; // Replace with your API key
     const postData = {
       NRIC: nric,
-      wallet_address: account,
+      wallet_address: addressMetaMask,
     };
     const config = {
       headers: {
@@ -175,6 +176,7 @@ export default function Home() {
       console.log(127, data)
     } catch (error) {
       console.error('Error to create Hash:', error);
+      console.error("BE fails, check Db, or User duplicated")
     }
   };
 
@@ -200,9 +202,10 @@ export default function Home() {
   };
 
   const handleMintNFT = async (url) => {
+    console.log(204,addressMetaMask, url, hash.hash )
     try {
       //  Estimate gas for the transaction
-      const estimatedGas = await tokenContract.estimateGas.mintNFT(account, url, hash.hash);
+      const estimatedGas = await tokenContract.estimateGas.mintNFT(addressMetaMask, url, hash.hash);
       // Check if the user has enough balance for the transaction
       const gasPrice = await tokenContract.provider.getGasPrice();
       let gasCost = estimatedGas.mul(gasPrice);
@@ -214,8 +217,8 @@ export default function Home() {
         throw new Error(message);
         
       }
-      console.log(216, account, url, hash.hash)
-      let transaction = await tokenContract.mintNFT(account, url, hash.hash);
+      console.log(216, addressMetaMask, url, hash.hash)
+      let transaction = await tokenContract.mintNFT(addressMetaMask, url, hash.hash);
       let confirmation = await transaction.wait();
       let event = confirmation.events[0]
       let value = event.args[2]

@@ -17,13 +17,13 @@ To deploy the project, follow the steps outlined below:
 
 migrate
 
-### Goerli Contract Address : `0x87bca5b2599ad04f56d7542c97b078fe898517a7`
+### Goerli Contract Address : `0xB71d0D6676ECFe62A3779C362612aB926cD383A7`
 
 ## Back End Setup
 
 `npm install --force`
 
-To run the back end locally, ensure that Postgresql is running, and verify the credentials in the .env file. Open main.go, uncomment lines 36 to 44, and comment out line 46. Then execute the following commands:
+To run the back end locally, ensure that Postgresql is running, and verify the credentials in the .env file. Open db/database.go, uncomment lines 30, and comment out line 28. Then execute the following commands:
 
 ```
 cd mb-be
@@ -65,6 +65,8 @@ To run tests, execute the following command in the project folder:
 `truffle test`
 
 `git rm -r --cached node_modules`
+
+`sudo -u postgres psql`
 
 ## Troubleshooting
 If encountering issues with IPFS, ensure the stable version is 50.1.2. For Metamask issues, make sure to use the stable version "ipfs-http-client": "^56.0.1". Also, ensure you are using Ganache CLI instead of the GUI version when developing with React.
