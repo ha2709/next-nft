@@ -60,7 +60,7 @@ export default function Home() {
           balance =  ethers.utils.formatEther(balance);
           balance = parseFloat(balance);
           setUserBalance(balance)
-          console.log(61, chainId, addressMetaMask, balance)
+        //   console.log(61, chainId, addressMetaMask, balance)
       
           let tokenAddress = MBNFT.networks[chainId].address;
           let contract
@@ -69,7 +69,7 @@ export default function Home() {
           } catch (error) {
             console.error('Error on contract deployment', error);
           }
-          console.log(63, contract)
+        //   console.log(63, contract)
 
           setTokenContract(contract);
         
@@ -78,12 +78,12 @@ export default function Home() {
             tokenId = tokenId.toString() 
           
             if (tokenId == "0")   return
-            console.log("Token ID:", tokenId); 
+          //   console.log("Token ID:", tokenId); 
             tokenId = parseInt(tokenId);
             let metadataUrl;
             for (let i = 1; i <= tokenId; i++) {
               let owner = await contract.ownerOf(i);
-              console.log(96, owner, currentAccount)
+            //   console.log(96, owner, currentAccount)
               if (owner.toLowerCase() === currentAccount.toLowerCase()) {
                 metadataUrl = await contract.tokenURI(i);
                 break;
@@ -94,7 +94,7 @@ export default function Home() {
               try {
                 
                 let metadata = await axios.get(metadataUrl, "");
-                console.log(107, metadata)
+              //   console.log(107, metadata)
                 setMetaDataUrl(metadata.data.image);
               } catch (error) {
                 console.error("No NFT", error);
@@ -106,7 +106,7 @@ export default function Home() {
             
           }
         } catch (error) {
-          console.log('Error', error);
+        //   console.log('Error', error);
         }
       } else {
         throw new Error("MetaMask is not installed or not enabled");
@@ -131,9 +131,9 @@ export default function Home() {
       // fail to read this from .env file 
       const url = `https://henry.infura-ipfs.io/ipfs/${added.path}`
       setFileUrl(url)
-      console.log(66, url)
+    //   console.log(66, url)
     } catch (error) {
-      console.log('Error uploading file: ', error)
+    //   console.log('Error uploading file: ', error)
     }  
   }
 
@@ -156,8 +156,7 @@ export default function Home() {
   };
 
   const postData = async () => {
-    // console.log(133, apiKey)
-    // const apiKey = process.env.API_KEY; // Replace with your API key
+    
     const postData = {
       NRIC: nric,
       wallet_address: addressMetaMask,
@@ -168,12 +167,12 @@ export default function Home() {
         'access_token': API_KEY // Set the authorization header
       }
     };
-    console.log(141, config)
+  //   console.log(141, config)
     try {
       const response = await axios.post('/users', postData, config);
       let data = response.data
       setHash(data);
-      console.log(127, data)
+    //   console.log(127, data)
     } catch (error) {
       console.error('Error to create Hash:', error);
       console.error("BE fails, check Db, or User duplicated")
@@ -190,11 +189,11 @@ export default function Home() {
       });
      
       const jsonObject = JSON.parse(data);
-      console.log(155, jsonObject, typeof jsonObject)
+    //   console.log(155, jsonObject, typeof jsonObject)
       const added = await client.add(JSON.stringify(jsonObject));
     
       const url = UPLOAD_URL + added.path;
-      console.log(159, url)
+    //   console.log(159, url)
       await handleMintNFT(url);
     } catch (error) {
       console.error(error);
@@ -210,30 +209,29 @@ export default function Home() {
       const gasPrice = await tokenContract.provider.getGasPrice();
       let gasCost = estimatedGas.mul(gasPrice);
       gasCost = ethers.utils.formatEther(gasCost);
-      console.log(gasCost, typeof gasCost, userBalance)
+    //   console.log(gasCost, typeof gasCost, userBalance)
       if ( userBalance < gasCost ) {
         let message = "Insufficient balance to cover gas cost"
         alert(message)
         throw new Error(message);
         
       }
-      console.log(216, addressMetaMask, url, hash.hash)
+    //   console.log(216, addressMetaMask, url, hash.hash)
       let transaction = await tokenContract.mintNFT(addressMetaMask, url, hash.hash);
       let confirmation = await transaction.wait();
       let event = confirmation.events[0]
       let value = event.args[2]
       let tokenId = value.toNumber()
-      console.log(tokenId)
+    //   console.log(tokenId)
       alert("Please reload the page to view the image from NFT ")
     } catch (error) {
       let message = "Fail to mint NFT, please check limit of NFT  "
-      console.log(message,error);
+    //   console.log(message,error);
       alert(message);
       
     }
   };
  
-
   return (
     <div className="flex justify-center">
       <div className="w-1/2 flex flex-col pb-12">
