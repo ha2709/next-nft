@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import Home from './Home';
+import Home from './index';
 
 describe('Home Component', () => {
   test('renders input fields and button', () => {
