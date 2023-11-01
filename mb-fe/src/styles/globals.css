@@ -25,3 +25,24 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+.custom-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff; /* Your button's default background color */
+  color: #fff; /* Text color */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Hover effect */
+.custom-button:hover {
+  background-color: #0056b3; /* Change to your desired hover color */
+  transform: scale(1.05); /* Increase button size on hover */
+}
+
+/* Active effect when button is clicked */
+.custom-button:active {
+  transform: scale(0.95); /* Slight scale-down effect when clicked */
+}

@@ -8,6 +8,11 @@ services:
       context: .
       dockerfile: Dockerfile-be
     environment:
+        # POSTGRES_PASSWORD: 1234
+        # POSTGRES_USER: root
+        # POSTGRES_DDATABASE: postgres
+        # POSTGRES_HOST: go_db
+        # POSTGRES_PORT: 5432
       DATABASE_URL: "host=go_db user=root password=1234 dbname=postgres sslmode=disable"
     ports:
       - "8000:8000"
@@ -41,8 +46,10 @@ services:
       - ./mb-fe/.env.local 
     ports:
       - "3000:3000"
-    # volumes:
-    #   - ./mb-fe:/usr/src/app
+      - "5001:5001"
+      - "8545:8545"
+    volumes:
+      - ./mb-fe:/usr/src/app
  
 volumes:  
   pgdata: {}      
