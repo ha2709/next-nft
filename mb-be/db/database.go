@@ -17,20 +17,20 @@ func Connect() (*sql.DB, error) {
 		log.Fatal("Error loading .env file")
 	}
 	// Retrieve database connection parameters from environment variables
-	// dbUser := os.Getenv("DATABASE_USER")
-	// dbPassword := os.Getenv("DATABASE_PASSWORD")
-	// dbName := os.Getenv("DATABASE_NAME")
-	// dbHost := os.Getenv("DATABASE_HOST")
-	// dbPort := os.Getenv("DATABASE_PORT")
+	dbUser := os.Getenv("DATABASE_USER")
+	dbPassword := os.Getenv("DATABASE_PASSWORD")
+	dbName := os.Getenv("DATABASE_NAME")
+	dbHost := os.Getenv("DATABASE_HOST")
+	dbPort := os.Getenv("DATABASE_PORT")
 
 	//  Construct the database connection string
-	// dbConnectionString := "user=" + dbUser + " password=" + dbPassword + " dbname=" + dbName + " host=" + dbHost + " port=" + dbPort
+	dbConnectionString := "user=" + dbUser + " password=" + dbPassword + " dbname=" + dbName + " host=" + dbHost + " port=" + dbPort
 	// Local PostgreSQL
-	// db, err := sql.Open("postgres", dbConnectionString)
-	// fmt.Printf("dbConnectionString %s...\n", dbConnectionString)
+	db, err := sql.Open("postgres", dbConnectionString)
+	fmt.Printf("dbConnectionString %s...\n", dbConnectionString)
 	// Connect to the database for Docker-compose
-	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
-	fmt.Printf("DATABASE_URL %s...\n", os.Getenv("DATABASE_URL"))
+	// db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	// fmt.Printf("DATABASE_URL %s...\n", os.Getenv("DATABASE_URL"))
 	err = db.Ping()
 	if err != nil {
 		log.Fatal(err)

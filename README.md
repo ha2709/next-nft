@@ -9,15 +9,17 @@ To clone the code, please use the following command:
 
 # Project Deployment
 
-To deploy the project, follow the steps outlined below:
+To deploy the project in local with Ganache, follow the steps outlined below:
 
 ## Migrate Contracts
 
 `truffle migrate --reset --compile-all --network development`
 
-migrate
+Please test with the Goerli Network
 
 ### Goerli Contract Address : `0xB71d0D6676ECFe62A3779C362612aB926cD383A7`
+
+For local network, it is complicated, you need to change the `networks[chainId].address` in the `mb-fe/src/utils/contracts/MBNFT.json` file. You copy the address from above migrate command and paste it with network 1337. 
 
 ## Docker Set up
 

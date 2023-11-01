@@ -64,10 +64,10 @@ func createUser(db *sql.DB) http.HandlerFunc {
 
 		// Enable CORS
 		enableCORS(w)
-		if !validateAPIKey(r) {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
+		// if !validateAPIKey(r) {
+		// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		// 	return
+		// }
 		// Set the necessary headers for CORS
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000") // Replace with your actual frontend origin
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")

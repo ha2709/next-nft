@@ -13,27 +13,26 @@ import {
   handleMintNFT,
   processMetaData,
   uploadToIPFS,
-  createUrl
+  createUrl,
+  getContractAndSigner,
+  getImageUrl
 } from '../utils/helpers';
 import NFTPreview from '../components/NFTPreview'; 
 const Home = () => {
-  const [fileUrl, setFileUrl] = useState(null);
+ 
   const [metadataUrl, setMetaDataUrl] = useState('');
-  const [description, setDescription] = useState(null);
-  const [name, setName] = useState(null);
-  const [hash, setHash] = useState(null);
-  const [account, setAccount] = useState(null);
-  const [nric, setNric] = useState('');
-  const [tokenContract, setTokenContract] = useState(null);
-  const [userBalance, setUserBalance] = useState(0);
-
+ 
   useEffect(() => {
     (async () => {
       try {
-        const { contract, signer } = await getContractAndSigner();
+        const { contract, signer, balance, currentAccount } = await getContractAndSigner();
         if (contract && signer) {
-          setTokenContract(contract);
-          getImageUrl(contract, signer);
+       
+          // console.log(38, contract)
+          let url = await getImageUrl(contract, signer, currentAccount);
+          // console.log(40, url)
+          setMetaDataUrl(url)
+          // await processMetaData(url)
         }
       } catch (error) {
         console.log('Error', error);
@@ -54,9 +53,9 @@ const Home = () => {
         uploadToIPFS={uploadToIPFS}
         createUrl={createUrl}
       />
-       <div className="w-1/2 flex flex-col pb-12">
+       
         <NFTPreview metadataUrl={metadataUrl} />
-      </div>
+      
     </div>
   );
 };
